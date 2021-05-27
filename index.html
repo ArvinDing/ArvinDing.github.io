@@ -1,1 +1,146 @@
-Hello World
+<canvas id="canvas" width="1000" height="1000"></canvas>
+
+<script>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+
+    var display = 200;
+    var m = "You are an American with $500 in savings(about median). Your liver has nearly shut down from years of drinking  ";
+    var m1 = "water riddled with oils, harmful minerals, and copious  amounts of parasites. With acute kidney failure,"
+    var m2=" you will soon become part of the estimated ''5-10 million  people to die annually from kidney disease''(WHO)."
+    var m3 = " Your goal is to acquire a  kidney+treatment at all costs, before it's too late";
+    //every 9 minutes a person is added 
+    // 17 people die each day waiting for an organ transplant
+    // Less than 40% of transplants 
+    //11.8 % live in poverty
+    //avg time 3-5 years
+
+    //400,000 for a kidney transplant or $1.3 million for a heart, plus monthly costs that average $2,500 for anti-rejection drugs
+
+var weeks= 12;
+var fontH="Harrington";
+var def="Calibri";
+var money= 1000;
+var onWaitList=false;
+var kidney=false;
+
+canvas.addEventListener("click",clickHandler);
+
+function nextWeek(){
+    weeks--;
+    if(onWaitList){
+        if(!kidney && Math.random()<0.1){
+            alert("You were donated a kidney through the waiting list");
+            kidney=true;
+        }
+    }
+}
+function clickHandler(event){
+	mx = event.clientX;
+    my = event.clientY;
+    //alert(my);
+    if(35<mx&& mx<35+450 && 260<my&& my<260+50 ){
+        if(money>80000){
+            if(!kidney){
+                alert("You need a kidney from the waiting list")
+                return;
+            }
+            alert("Congrats, you survived;Your new kidney is filtering your blood perfectly!")
+        }else{
+            alert("Not enough money");
+        }
+        nextWeek();
+    }
+    if(590<mx&& mx<590+250 && 260<my&& my<260+50 ){
+       var x= prompt("How much do you want to gamble");
+        x=Math.min(money,x);
+        x=Math.max(0,x);
+        if(Math.random()<0.4)
+            x*=-1;
+        money+=x;
+
+        nextWeek();
+    }
+    if(35<mx&& mx<35+450 && 330<my&& my<330+50 ){
+        if(onWaitList){
+            alert("You are already on the waiting list");
+            return;
+        }
+        onWaitList=true;
+        nextWeek(); 
+
+    }
+    if(590<mx&& mx<590+250 && 330<my&& my<330+50 ){
+        nextWeek();
+        money+=1000;
+    }
+}
+function update() {
+        clear();
+        if(weeks<0){
+            alert("You lost. You were unable to get a kidney and died.");
+            weeks=12;
+            money=1000;
+        }
+        drawText("Background: ",25,50 ,35, fontH)
+        drawText(m, 50, 100 ,20, def);
+        drawText(m1, 30, 130 ,20 , def);
+        drawText(m2, 30, 160 ,20, def );
+        drawText(m3, 30, 190 ,20 , def);
+
+
+        drawText("Actions(Each action takes one week): ",25,250 ,35, fontH);
+
+        ctx.strokeRect(35, 260,450, 50);
+        drawText("Buy A Kidney Treatment($80,000)", 50, 290 ,20, def);
+
+        ctx.strokeRect(590, 260, 250, 50);
+        drawText("Gamble", 605, 290 ,20, def);
+
+        ctx.strokeRect(35, 330, 450, 50);
+        drawText("Join a Kidney Transplant Waiting List", 50, 360 ,20, def);
+
+        ctx.strokeRect(590, 330, 250, 50);
+        drawText("Work(+$1000)", 605, 360 ,20, def);
+
+
+
+        drawText("Weeks left:" + weeks, 500, 450 ,50 ,fontH);
+        drawText("Money: $"+ money ,500,500 ,35, fontH);
+
+        drawText("Extra Stats(From the start of the game): ",25,650 ,25, fontH);
+        drawText("# of people on the Waitlist who Died: "+((12-weeks)*119), 50, 680 ,20, fontH);
+        drawText("# of new people on the Waitlist:" + ((12-weeks)*1120), 500, 680 ,20 ,fontH);
+
+    }
+    ONE_FRAME_TIME = 1000 / 240;
+
+    mainloop = function () {
+        update()
+    };
+    setInterval(mainloop, ONE_FRAME_TIME);
+
+
+    function clear() {
+        ctx.clearRect(0, 0, 1000, 1000);
+    };
+    function fillRect(color, sx, sy, w, h) {
+        ctx.fillStyle = color
+        ctx.fillRect(sx, sy, w, h)
+    }
+    function drawText(text, x, y, fontSize,fontF) {
+        ctx.fillStyle = "black";
+        ctx.font = fontSize + "px "+fontF;
+
+
+        ctx.fillText(text, x, y);
+    }
+
+    function fillCirc(color, x, y, r) {
+        ctx.beginPath()
+        ctx.arc(x, y, r, 0, 2 * pi)
+        ctx.fillStyle = color
+        ctx.fill()
+    }
+
+</script>
