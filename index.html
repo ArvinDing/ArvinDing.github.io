@@ -1,56 +1,92 @@
 <h4 id=screen>Screen Coordinates:</h4>
 <h4 id=screen1>Transformed Coordinates:</h4>
-
-<canvas id="canvas" width="1200" height="600"></canvas>
-
+<canvas id="canvas" width="1400" height="600"></canvas>
 <script>
     const canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
     class node {
-        constructor(val, x, y) {
+        constructor(val) {
             this.value = val;
-            this.x = x, this.y = y;
             this.left = null;
             this.right = null;
+            this.cnt = 1;
+            this.prior = Math.random();
         }
-        display() {
-         
-            
+        display(x, y) {
+            if (this.right) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 50, y + 50);
+                ctx.stroke();
+                this.right.display(x + 50, y + 50);
+            }
+            if (this.left) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - 50, y + 50);
+                ctx.stroke();
+                this.left.display(x - 50, y + 50);
+            }
+            fillCirc("black", x, y, 20);
+            fillCirc("white", x, y, 18);
+            drawText(this.value, x - 5, y + 3, 18, 'arial');
+            drawText("Size: " + this.cnt, x - 5, y + 8, 5, 'arial');
+            drawText("Prior: " + parseFloat(this.prior).toFixed(2), x - 11, y + 13, 5, 'arial');
 
-            if (this.right){
-                ctx.beginPath();
-                ctx.moveTo(this.x,this.y);
-                ctx.lineTo(this.right.x, this.right.y);
-                ctx.stroke();
-              this.right.display();
-            }
-            if (this.left){
-                ctx.beginPath();
-                ctx.moveTo(this.x,this.y);
-                ctx.lineTo(this.left.x, this.left.y);
-                ctx.stroke();
-                this.left.display();
-            }
-            fillCirc("black", this.x, this.y, 20);
-            fillCirc("white",this.x,this.y,18);
-            drawText(this.value,this.x-5,this.y+6,18,'arial');
+        }
+        move(xAdd, yAdd) {
+            this.x += xAdd;
+            this.y += yAdd;
+            if (this.right)
+                this.right.move(xAdd, yAdd);
+            if (this.left)
+                this.left.move(xAdd, yAdd);
+        }
+        updateCnt() {
+            let cnt = 1;
+            if (this.right)
+                cnt += this.right.cnt;
+            if (this.left)
+                cnt += this.left.cnt;
+            this.cnt = cnt;
+        }
+        copy(other) {
+            this.left = other.left;
+            this.right = other.right;
+            this.cnt = other.cnt;
+            this.prior = other.prior;
+            this.value = other.value;
         }
     }
-     tree = new node(Math.floor(10*Math.random()), 80, 100);
-     tree.left= new node(Math.floor(10*Math.random()),10,150);
-     tree.left.left= new node(Math.floor(10*Math.random()),10-40,200);
-     tree.left.right= new node(Math.floor(10*Math.random()),10+40,200);
-
-     tree.right= new node(Math.floor(10*Math.random()),150,150);
-     tree.right.right= new node(Math.floor(10*Math.random()),190,200);
-     tree.right.left= new node(Math.floor(10*Math.random()),110,200);
-
+    function merge(left, right) {
+        if (!right) {
+            return left;
+        }
+        if (!left) {
+            return right;
+        }
+        if (left.prior > right.prior) {
+            save = merge(left.right, right);
+            if (!left.right)
+                left.right = new node();
+            left.right.copy(save);
+            left.updateCnt();
+            return left;
+        } else {
+            save = merge(left, right.left);
+            if (!right.left)
+                right.left = new node();
+            right.left.copy(save);
+            right.updateCnt();
+            return right;
+        }
+    }
     const pi = Math.PI;
-    const width = 1200;
+    const width = 1400;
     const height = 600;
     const zoomIntensity = 0.1;
     let panX = 0, panY = 0, mouseD = false;
-    let scale = 1;
+    let scale = 1.9;
     canvas.onwheel = function (event) {
         event.preventDefault();
         const mX = event.clientX - canvas.offsetLeft;
@@ -63,7 +99,17 @@
 
         scale *= zoom;
     }
+    tree = new node(Math.floor(10 * Math.random()));
+    tree1 = new node(Math.floor(10 * Math.random()));
+    tree2 = new node(Math.floor(10 * Math.random()));
 
+    var trees = [];
+    trees.push([merge(merge(tree, tree1), tree2), 200, 200]);
+
+
+    //  trees.push([tree2,100,200]);
+
+    //in order of layers on page
     function update(timestamp) {
         ctx.clearRect(0, 0, width, height);
         ctx.save();
@@ -71,15 +117,41 @@
         ctx.translate(panX, panY);
         ctx.scale(scale, scale);
         //xtrans=(xscreen- panX)/scale
-        tree.display();
-
+        idx = 0;
+        for (const a of trees) {
+            if (a[0]) {
+                drawText("Index: " + idx, a[1] - 15, a[2] - 22, 10, 'arial');
+                a[0].display(a[1], a[2]);
+            }
+            idx++;
+        }
         //transformed coordinates, coordinates in the background
-
         ctx.restore();
+        //newNode
+        fillRect("white", 1120, 0, 300, 600);
+        drawLine(1120, 0, 1120, 600)
+        drawText("Split", 1180, 60, 40, 'arial');
+        drawLine(1160, 100, 1400, 100)
+
+        drawText("Merge", 1180, 160, 40, 'arial');
+        drawLine(1120, 0, 1120, 600)
+        drawLine(1160, 200, 1400, 200)
+
+        drawText("New Node", 1180, 260, 40, 'arial');
+        drawLine(1160, 300, 1400, 300)
+
+        drawText("Delete Tree", 1180, 360, 40, 'arial');
+        drawLine(1160, 400, 1400, 400)
+
         window.requestAnimationFrame(update);
     }
     update();
-
+    function drawLine(x, y, x1, y1) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+    }
     function fillRect(color, sx, sy, w, h) {
         ctx.fillStyle = color
         ctx.fillRect(sx, sy, w, h)
@@ -96,11 +168,45 @@
         ctx.fillStyle = color
         ctx.fill()
     }
+    function getRandRange(min, max) {
+        return Math.random() * (max + 1 - min) + min;
+    }
     start = {};
+    var clicked = -1;
     canvas.addEventListener("mousedown", function (evt) {
         let mX = event.clientX - canvas.offsetLeft;
         let mY = event.clientY - canvas.offsetTop;
+
         rX = (mX - panX) / scale, rY = (mY - panY) / scale;
+        if (mX > 1120) {
+            if (mY < 100) {
+                alert("split");
+            } else if (mY < 200) {
+                idx1 = prompt("First Tree Index");
+                idx2 = prompt("Second Tree Index to merge into First Tree Index");
+                trees[idx1][0].copy(merge(trees[idx1][0], trees[idx2][0]));
+                trees[idx2][0] = null;
+            } else if (mY < 300) {
+                var a = prompt("Node Value?");
+                val = new node(a);
+                trees.push([val, getRandRange((200 - panX) / scale, (800 - panX) / scale), getRandRange((200 - panY) / scale, (400 - panY) / scale)]);
+            } else if (mY < 400) {
+                idx1 = prompt("Index of Tree to Delete");
+                trees[idx1][0] = null;
+            } else if (mY < 500) {
+
+            } else {
+
+            }
+            return;
+        }
+        for (let i = 0; i < trees.length; i++) {
+            let a = trees[i];
+            if ((rX - trees[i][1]) ** 2 + (rY - trees[i][2]) ** 2 <= 20 ** 2) {
+                clicked = i;
+                break;
+            }
+        }
         document.getElementById("screen").innerHTML = ("Screen Coordinates: " + mX + "/" + mY);
         document.getElementById("screen1").innerHTML = ("Screen Coordinates: " + rX + "/" + rY);
 
@@ -113,12 +219,23 @@
         let mY = event.clientY - canvas.offsetTop;
         rX = (mX - panX) / scale, rY = (mY - panY) / scale;
         if (mouseD) {
-            panX += (rX - start.x);
-            panY += (rY - start.y);
+            if (clicked == -1) {
+                panX += (rX - start.x);
+                panY += (rY - start.y);
+            } else {
+                trees[clicked][1] += (rX - start.x);
+                trees[clicked][2] += (rY - start.y);
+                start = { x: rX, y: rY };
+            }
         }
+    });
+    canvas.addEventListener("mouseout", function (evt) {
+        mouseD = false;
+        clicked = -1;
     });
 
     canvas.addEventListener("mouseup", function (evt) {
         mouseD = false;
+        clicked = -1;
     });
 </script>
