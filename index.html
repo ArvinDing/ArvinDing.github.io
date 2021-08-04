@@ -81,6 +81,42 @@
             return right;
         }
     }
+    //return [left Subtree, right subtree]
+    function split(info, lCnt, add) {
+        if (!info) {
+            return [null, null];
+        }
+        toLeft = add;
+        if (info.left)
+            toLeft += info.left.cnt;
+        if (lCnt <= toLeft) {
+            save = split(info.left, lCnt, add);
+
+            if (!save[1]) {
+                info.left = null;
+            } else if (!info.left) {
+                info.left = new Node();
+            } else {
+                info.left.copy(save[1]);
+            }
+            info.updateCnt();
+            return [save[0], info];
+        } else {
+            save = split(info.right, lCnt, 1 + toLeft);
+
+            if (!save[0]) {
+                info.right = null;
+            } else if (!info.right) {
+                info.right = new Node();
+            } else {
+                info.right.copy(save[0]);
+            }
+            info.updateCnt();
+
+            return [info, save[1]];
+        }
+
+    }
     const pi = Math.PI;
     const width = 1400;
     const height = 600;
@@ -180,7 +216,13 @@
         rX = (mX - panX) / scale, rY = (mY - panY) / scale;
         if (mX > 1120) {
             if (mY < 100) {
-                alert("split");
+                idx = prompt("Tree Index to Split");
+                cnt = prompt("How many in left portion?")
+                save = split(trees[idx][0], cnt, 0);
+                trees.push([save[0], trees[idx][1], trees[idx][2]]);
+                trees.push([save[1], trees[idx][1] + 100, trees[idx][2]]);
+                trees[idx][0] = null;
+
             } else if (mY < 200) {
                 idx1 = prompt("First Tree Index");
                 idx2 = prompt("Second Tree Index to merge into First Tree Index");
@@ -202,6 +244,8 @@
         }
         for (let i = 0; i < trees.length; i++) {
             let a = trees[i];
+            if (!a[0])
+                continue;
             if ((rX - trees[i][1]) ** 2 + (rY - trees[i][2]) ** 2 <= 20 ** 2) {
                 clicked = i;
                 break;
