@@ -1,6 +1,23 @@
-<h4 id=screen>Screen Coordinates:</h4>
-<h4 id=screen1>Transformed Coordinates:</h4>
+<h1 style="font-family:arial">Treap Visualizer</h1>
+<p style="font-family:arial"> Treaps are very powerful and <b>easy to implement</b> data structures that allow us to do
+    operations <b>efficiently</b>
+    on an ordered set of elements that we would normally not be able to do.
+    The treaps can be though as dyanmic arrays which we can merge different arrays, split arrays, reverse arrays, add
+    elements to an array, and update and query certain properties over contigous ranges all in
+    O(log(n)), where n is number of the nodes.
+    To find the array each treap corresponds to take the values in an inorder traversal of the treap, as if it was a
+    normal binary tree.
+    The implicit treaps represented below maintain a max-heap of randomly generated priorities(Prior) to maintain a
+    log(n) expected height. The Size property
+    of each node represents size of its subtree, which helps us make decisions at each node on the boundary.
+    For more information, checkout CP-Algorithms blog on <a
+        href="https://cp-algorithms.com/data_structures/treap.html#toc-tgt-2">Cartesian Trees/Treaps</a>.
+</p>
+
+<h4 id=screen style="font-family:arial">Canvas Coordinates:</h4>
+<h4 id=screen1 style="font-family:arial">Transformed Coordinates:</h4>
 <canvas id="canvas" width="1400" height="600"></canvas>
+
 <script>
     const canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
@@ -12,20 +29,21 @@
             this.cnt = 1;
             this.prior = Math.random();
         }
-        display(x, y) {
+        display(x, y, layer) {
+            let extra = 20 - 6 * layer;
             if (this.right) {
                 ctx.beginPath();
                 ctx.moveTo(x, y);
-                ctx.lineTo(x + 50, y + 50);
+                ctx.lineTo(x + extra + 50, y + 50);
                 ctx.stroke();
-                this.right.display(x + 50, y + 50);
+                this.right.display(x + extra + 50, y + 50, layer + 1);
             }
             if (this.left) {
                 ctx.beginPath();
                 ctx.moveTo(x, y);
-                ctx.lineTo(x - 50, y + 50);
+                ctx.lineTo(x - extra - 50, y + 50);
                 ctx.stroke();
-                this.left.display(x - 50, y + 50);
+                this.left.display(x - extra - 50, y + 50, layer + 1);
             }
             fillCirc("black", x, y, 20);
             fillCirc("white", x, y, 18);
@@ -56,6 +74,19 @@
             this.cnt = other.cnt;
             this.prior = other.prior;
             this.value = other.value;
+        }
+        toString() {
+            let ans = "";
+            if (this.left) {
+                ans += this.left.toString();
+                ans += ', ';
+            }
+            ans += this.value;
+            if (this.right) {
+                ans += ', ';
+                ans += this.right.toString();
+            }
+            return ans;
         }
     }
     function merge(left, right) {
@@ -157,7 +188,7 @@
         for (const a of trees) {
             if (a[0]) {
                 drawText("Index: " + idx, a[1] - 15, a[2] - 22, 10, 'arial');
-                a[0].display(a[1], a[2]);
+                a[0].display(a[1], a[2], 0);
             }
             idx++;
         }
@@ -179,6 +210,8 @@
         drawText("Delete Tree", 1180, 360, 40, 'arial');
         drawLine(1160, 400, 1400, 400)
 
+        drawText("Print Tree", 1180, 460, 40, 'arial');
+        drawLine(1160, 500, 1400, 500)
         window.requestAnimationFrame(update);
     }
     update();
@@ -233,10 +266,12 @@
                 val = new node(a);
                 trees.push([val, getRandRange((200 - panX) / scale, (800 - panX) / scale), getRandRange((200 - panY) / scale, (400 - panY) / scale)]);
             } else if (mY < 400) {
-                idx1 = prompt("Index of Tree to Delete");
-                trees[idx1][0] = null;
+                idx = prompt("Index of Tree to Delete");
+                trees[idx][0] = null;
             } else if (mY < 500) {
-
+                let ans = "";
+                idx = prompt("Index of Tree to Print");
+                alert("[" + trees[idx][0].toString() + ']');
             } else {
 
             }
@@ -251,8 +286,8 @@
                 break;
             }
         }
-        document.getElementById("screen").innerHTML = ("Screen Coordinates: " + mX + "/" + mY);
-        document.getElementById("screen1").innerHTML = ("Screen Coordinates: " + rX + "/" + rY);
+        document.getElementById("screen").innerHTML = ("Canvas Coordinates: " + mX + "/" + mY);
+        document.getElementById("screen1").innerHTML = ("Transformed Coordinates: " + rX + "/" + rY);
 
         mouseD = true;
         start = { x: rX, y: rY };
