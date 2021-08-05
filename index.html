@@ -1,22 +1,56 @@
-<h1 style="font-family:arial">Treap Visualizer</h1>
-<p style="font-family:arial"> Treaps are very powerful and <b>easy to implement</b> data structures that allow us to do
-    operations <b>efficiently</b>
-    on an ordered set of elements that we would normally not be able to do.
-    The treaps can be though as dyanmic arrays which we can merge different arrays, split arrays, reverse arrays, add
-    elements to an array, and update and query certain properties over contigous ranges all in
-    O(log(n)), where n is number of the nodes.
-    To find the array each treap corresponds to take the values in an inorder traversal of the treap, as if it was a
-    normal binary tree.
-    The implicit treaps represented below maintain a max-heap of randomly generated priorities(Prior) to maintain a
-    log(n) expected height. The Size property
-    of each node represents size of its subtree, which helps us make decisions at each node on the boundary.
-    For more information, checkout CP-Algorithms blog on <a
-        href="https://cp-algorithms.com/data_structures/treap.html#toc-tgt-2">Cartesian Trees/Treaps</a>.
-</p>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"/>  
+</head>
 
-<h4 id=screen style="font-family:arial">Canvas Coordinates:</h4>
-<h4 id=screen1 style="font-family:arial">Transformed Coordinates:</h4>
-<canvas id="canvas" width="1400" height="600"></canvas>
+<body>
+    <nav class="navbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-project-diagram fa-3x"></i>  
+                    <span class="link-text">Treap Visualizer</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="typing.html" class="nav-link">
+                    <i class="fas fa-dove fa-3x"></i>
+                    <span class="link-text">Typing Bird</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="desmos.html" class="nav-link">
+                    <i class="fas fa-chart-line fa-3x"></i>
+                    <span class="link-text">SVG to Desmos   </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <main>
+        <h1>Treap Visualizer</h1>
+        <p> Treaps are very powerful and <b>easy to implement</b> data structures that allow us to do
+            operations <b>efficiently</b>
+            on an ordered set of elements that we would normally not be able to do.
+            The treaps can be though as dyanmic arrays which we can merge different arrays, split arrays, reverse
+            arrays, add
+            elements to an array, and update and query certain properties over contigous ranges all in
+            O(log(n)), where n is number of the nodes.
+            To find the array each treap corresponds to take the values in an inorder traversal of the treap, as if it
+            was a
+            normal binary tree.
+            The implicit treaps represented below maintain a max-heap of randomly generated priorities(Prior) to
+            maintain a
+            log(n) expected height. The Size property
+            of each node represents size of its subtree, which helps us make decisions at each node on the boundary.
+            For more information, checkout CP-Algorithms blog on <a
+                href="https://cp-algorithms.com/data_structures/treap.html#toc-tgt-2">Cartesian Trees/Treaps</a>.
+        </p>
+
+        <h4 id=screen>Canvas Coordinates:</h4>
+        <h4 id=screen1>Transformed Coordinates:</h4>
+        <canvas id="canvas" width="1400" height="600"></canvas>
+    </main>
+</body>
 
 <script>
     const canvas = document.getElementById("canvas");

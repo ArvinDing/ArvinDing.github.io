@@ -1,0 +1,181 @@
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-project-diagram fa-3x"></i>  
+                    <span class="link-text">Treap Visualizer</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="typing.html" class="nav-link">
+                    <i class="fas fa-dove fa-3x"></i>
+                    <span class="link-text">Typing Bird</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="desmos.html" class="nav-link">
+                    <i class="fas fa-chart-line fa-3x"></i>
+                    <span class="link-text">SVG to Desmos   </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <main style="padding-left:5rem">
+    <h1>Typing Bird</h1>
+
+<canvas id="canvas" width="1000" height="1000"></canvas>
+</main>
+</body>
+<script>
+    var canvas = document.getElementById('canvas')
+    var ctx = canvas.getContext('2d')
+    var map = {};
+    over = false;
+    document.addEventListener("keydown", function (event) {
+        map[event.key] = true;
+        event.preventDefault();
+        if (event.key == ' ' && over) {
+            map = {}
+            start();
+            time = setInterval(update, ONE_FRAME_TIME);
+            over = false;
+        }
+    }, true);
+    document.addEventListener("keyup", function (event) {
+        map[event.key] = false;
+    }, true);
+
+    story = "Maybe there aren't any such things as good friends or bad friends - maybe there are just friends, people who stand by you when you're hurt and who help you feel not so lonely. Maybe they're always worth being scared for, and hoping for, and living for. Maybe worth dying for too, if that's what has to be. No good friends. No bad friends. Only people you want, need to be with; people who build their houses in your heart."
+    lines = [];
+    characterS = 40;
+    pipes = [];
+    score = 0;
+
+    start()
+    function start() {
+        curr = 0;
+        score = 0, yVel = 0;
+        playerX = 50, playerY = 295;
+        lineIdx = 0, currChar = 0;
+        pipes = [];
+        while (curr < story.length) {
+            lines.push(story.substring(curr, curr + characterS));
+            curr += characterS;
+        }
+        //x,bottom ,top boundary
+        spacing = 120;
+        pipes.push([480, 260, 350]);
+
+        save = Math.random() * 290 + 120;
+        pipes.push([480 + spacing, save, save + 90]);
+
+        save = Math.random() * 290 + 120;
+        pipes.push([480 + spacing * 2, save, save + 90]);
+
+        save = Math.random() * 290 + 120;
+        pipes.push([480 + spacing * 3, save, save + 90]);
+
+
+    }
+
+    function fillRect(color, sx, sy, w, h) {
+        ctx.fillStyle = color
+        ctx.fillRect(sx, sy, w, h)
+    }
+
+    function drawText(text, x, y, fontSize) {
+        ctx.fillStyle = "black";
+        ctx.font = fontSize + "px Consolas";
+        ctx.fillText(text, x, y);
+    }
+    function jump() {
+        yVel = -6
+    }
+
+    lineIdx = 0;
+    currChar = 0;
+    playerX = 50, playerY = 295;
+    yVel = 0;
+    function update() {
+        draw();
+        if (!(lineIdx == 0 && currChar == 0))
+            yVel += 0.32;
+        playerY += yVel;
+        if (playerY >= 465 || playerY <= 120) {
+            lose();
+        }
+        for (i = 0; i < pipes.length; i++) {
+            if (!(lineIdx == 0 && currChar == 0))
+                pipes[i][0] -= 1;
+            if (pipes[i][0] == 40)
+                score++;
+            if (pipes[i][0] < 20) {
+                save = Math.random() * 290 + 120;
+                pipes[i] = [480, save, save + 90];
+            }
+            if ((playerX <= pipes[i][0] && pipes[i][0] <= playerX + 25) || (playerX <= pipes[i][1] && pipes[i][1] <= playerX + 25)) {
+                if (!(pipes[i][1] <= playerY && playerY + 25 <= pipes[i][2])) {
+                    lose();
+                }
+            }
+        }
+    }
+
+    function draw() {
+        clear()
+        fillRect("black", 10, 10, 500, 10)
+        fillRect("black", 10, 110, 500, 10)
+        fillRect("black", 10, 490, 500, 10)
+
+        fillRect("black", 10, 10, 10, 490)
+        fillRect("black", 500, 10, 10, 490)
+
+        drawText(lines[lineIdx], 30, 70, 20)
+
+        fillRect("black", 31 + currChar * 11.05, 75, 7, 4)
+        if (map[lines[lineIdx].charAt(currChar)]) {
+            currChar++;
+            jump()
+            if (currChar == characterS) {
+                lineIdx++;
+                currChar = 0;
+            }
+        }
+        fillRect("black", playerX, playerY, 25, 25);
+        drawText(score, 450, 450, 40)
+
+        for (i = 0; i < pipes.length; i++) {
+            if (pipes[i][0] <= 490) {
+                fillRect("black", pipes[i][0], pipes[i][2], 20, 490 - pipes[i][2])
+                fillRect("black", pipes[i][0], 120, 20, (pipes[i][1] - 120))
+            }
+        }
+    }
+
+    function clear() {
+        fillRect("white", 0, 0, 1000, 1000)
+    }
+    function lose() {
+        clearInterval(time);
+
+        clear();
+        ctx.globalAlpha = 0.3;
+        draw();
+        ctx.globalAlpha = 1;
+        drawText("Game Over", 100, 300, 60)
+        drawText("Press Space to Restart", 70, 340, 30)
+        over = true;
+    }
+    var ONE_FRAME_TIME = 1000 / 60;
+    time = setInterval(update, ONE_FRAME_TIME);
+
+
+</script>
+
+</html>
