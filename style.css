@@ -1,71 +1,73 @@
-:root{
-    font-size:16px;
-    font-family:arial;
+:root {
+    font-size: 16px;
+    font-family: Arial;
 }
 
 body {
-    color:black;
-    background-color:white;
-    margin:0;
-    padding:0;
+    color: black;
+    background-color: white;
+    margin: 0;
+    padding: 0;
 }
-main{
-    margin-left:6rem;
-    padding-top:2rem;
-    padding-right:2rem;
+
+header {
+    background: #111111;
+    padding: 10px 0; /* Adjust the top and bottom padding as needed */
 }
-.navbar{
-    width:5rem;
-    height:100vh;
-    position:fixed;
-    background:#111111;
-    transition: width 250ms ease;
+
+.navbar {
+    /* Remove fixed position and width */
 }
-.navbar-nav{
+
+.navbar-nav {
     list-style: none;
-    padding:10vw 0px 0px 0px;
-    margin:0;
-    display:flex;
-    flex-direction:column;
+    padding: 0;
+    margin: 0;
+    display: flex;
 }
-body::-webkit-scrollbar{
-    width:0.25rem;
-}
-body::-webkit-scrollbar-track{
-    background: #ffffff;
-}
-body::-webkit-scrollbar-thumb{
-    background: #000000;
 
+.nav-item {
+    /* Adjust styling for top navigation items */
+    margin-right: 20px; /* Add spacing between navigation items */
+    padding: 10px;
+    position: relative;
 }
-.nav-link{
-    display:flex;
-    align-items:center;
-    height:5rem;
-    text-decoration:none;
-    color:white;
-}
-.nav-item{
-    width: 100%;
-    padding-top:10px;
 
+.nav-link {
+    text-decoration: none;
+    color: black;
+    display: flex;
+    align-items: center;
 }
-.link-text{
-    display:none;
-    margin-left:1rem;
-    font:  60px;
-    font-weight: 900;
 
+.link-text {
+    margin-left: 8px; /* Adjust spacing between icon and text */
+    font-size: 18px; /* Adjust the font size as needed */
+    position: relative; 
 }
- .navbar:hover{
-     width:16rem;
- }
-.navbar:hover .link-text{
-    display:block;
+
+/* Adjust styles for your FontAwesome icons */
+.fas {
+    font-size: 24px; /* Adjust the icon size as needed */
+    margin-right: 4px; /* Add spacing between the icon and text */
 }
-.nav-link:hover{
-    background:black;
+
+main {
+    margin-top: 20px; /* Adjust the top margin to make space for the navigation bar */
+    padding: 0 20px; /* Add padding to the main content */
 }
-.fas{
-    padding-left:1rem;
+
+.nav-item::after {
+    content: "";
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 0%;
+    height: 2px; /* Adjust the height of the line as needed */
+    background: rgb(0, 0, 0); /* Color of the line */
+    transition: width 0.3s ease; /* Add a smooth transition effect */
+}
+
+.nav-item:hover::after {
+    width: 100%; /* Make the line fully visible on hover */
 }

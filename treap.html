@@ -1,0 +1,337 @@
+<head>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="nav-placeholder"></div>
+    <main>
+        <h1>Treap Visualizer</h1>
+        <p> Treaps are very powerful and <b>easy to implement</b> data structures that allow us to do
+            operations <b>efficiently</b>
+            on an ordered set of elements that we would normally not be able to do.
+            The treaps can be thought as dyanmic arrays. We can merge these different arrays, split arrays, reverse
+            arrays, add
+            elements to an array, and update and query certain properties over contigous ranges all in
+            O(log(n)) with treaps, where n is number of the nodes.
+            To find the array each treap corresponds to take the values in an inorder traversal of the treap, as if it
+            was a
+            normal binary tree.
+            The implicit treaps represented below maintain a max-heap of randomly generated priorities(Prior) to
+            maintain a
+            log(n) expected height. The Size property
+            of each node represents size of its subtree, which helps us make decisions at each node on the boundary.
+            For more information, checkout CP-Algorithms blog on <a
+                href="https://cp-algorithms.com/data_structures/treap.html#toc-tgt-2">Cartesian Trees/Treaps</a>.
+        </p>
+
+        <h4 id=screen>Canvas Coordinates:</h4>
+        <h4 id=screen1>Transformed Coordinates:</h4>
+        <canvas id="canvas" width="1400" height="600"></canvas>
+    </main>
+</body>
+
+<script>
+    $(function () {
+        $("#nav-placeholder").load("nav.html");
+    });
+    const canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    class node {
+        constructor(val) {
+            this.value = val;
+            this.left = null;
+            this.right = null;
+            this.cnt = 1;
+            this.prior = Math.random();
+        }
+        display(x, y, layer) {
+            let extra = 20 - 6 * layer;
+            if (this.right) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + extra + 50, y + 50);
+                ctx.stroke();
+                this.right.display(x + extra + 50, y + 50, layer + 1);
+            }
+            if (this.left) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x - extra - 50, y + 50);
+                ctx.stroke();
+                this.left.display(x - extra - 50, y + 50, layer + 1);
+            }
+            fillCirc("black", x, y, 20);
+            fillCirc("white", x, y, 18);
+            drawText(this.value, x - 5, y + 3, 18, 'arial');
+            drawText("Size: " + this.cnt, x - 5, y + 8, 5, 'arial');
+            drawText("Prior: " + parseFloat(this.prior).toFixed(2), x - 11, y + 13, 5, 'arial');
+
+        }
+        move(xAdd, yAdd) {
+            this.x += xAdd;
+            this.y += yAdd;
+            if (this.right)
+                this.right.move(xAdd, yAdd);
+            if (this.left)
+                this.left.move(xAdd, yAdd);
+        }
+        updateCnt() {
+            let cnt = 1;
+            if (this.right)
+                cnt += this.right.cnt;
+            if (this.left)
+                cnt += this.left.cnt;
+            this.cnt = cnt;
+        }
+        copy(other) {
+            this.left = other.left;
+            this.right = other.right;
+            this.cnt = other.cnt;
+            this.prior = other.prior;
+            this.value = other.value;
+        }
+        toString() {
+            let ans = "";
+            if (this.left) {
+                ans += this.left.toString();
+                ans += ', ';
+            }
+            ans += this.value;
+            if (this.right) {
+                ans += ', ';
+                ans += this.right.toString();
+            }
+            return ans;
+        }
+    }
+    function merge(left, right) {
+        if (!right) {
+            return left;
+        }
+        if (!left) {
+            return right;
+        }
+        if (left.prior > right.prior) {
+            save = merge(left.right, right);
+            if (!left.right)
+                left.right = new node();
+            left.right.copy(save);
+            left.updateCnt();
+            return left;
+        } else {
+            save = merge(left, right.left);
+            if (!right.left)
+                right.left = new node();
+            right.left.copy(save);
+            right.updateCnt();
+            return right;
+        }
+    }
+    //return [left Subtree, right subtree]
+    function split(info, lCnt, add) {
+        if (!info) {
+            return [null, null];
+        }
+        toLeft = add;
+        if (info.left)
+            toLeft += info.left.cnt;
+        if (lCnt <= toLeft) {
+            save = split(info.left, lCnt, add);
+
+            if (!save[1]) {
+                info.left = null;
+            } else if (!info.left) {
+                info.left = new Node();
+            } else {
+                info.left.copy(save[1]);
+            }
+            info.updateCnt();
+            return [save[0], info];
+        } else {
+            save = split(info.right, lCnt, 1 + toLeft);
+
+            if (!save[0]) {
+                info.right = null;
+            } else if (!info.right) {
+                info.right = new Node();
+            } else {
+                info.right.copy(save[0]);
+            }
+            info.updateCnt();
+
+            return [info, save[1]];
+        }
+
+    }
+    const pi = Math.PI;
+    const width = 1400;
+    const height = 600;
+    const zoomIntensity = 0.1;
+    let panX = 0, panY = 0, mouseD = false;
+    let scale = 1.9;
+    canvas.onwheel = function (event) {
+        event.preventDefault();
+        const mX = event.clientX - canvas.offsetLeft;
+        const mY = event.clientY - canvas.offsetTop;
+        const wheel = event.deltaY < 0 ? 1 : -1;
+        const zoom = Math.exp(wheel * zoomIntensity);
+        rX = (mX - panX) / scale, rY = (mY - panY) / scale;
+        panX = mX - (scale * zoom) * rX;
+        panY = mY - (scale * zoom) * rY;
+
+        scale *= zoom;
+    }
+    tree = new node(Math.floor(10 * Math.random()));
+    tree1 = new node(Math.floor(10 * Math.random()));
+    tree2 = new node(Math.floor(10 * Math.random()));
+
+    var trees = [];
+    trees.push([merge(merge(tree, tree1), tree2), 200, 200]);
+
+
+    //  trees.push([tree2,100,200]);
+
+    //in order of layers on page
+    function update(timestamp) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        //scale bigger, zoomed in   
+        ctx.translate(panX, panY);
+        ctx.scale(scale, scale);
+        //xtrans=(xscreen- panX)/scale
+        idx = 0;
+        for (const a of trees) {
+            if (a[0]) {
+                drawText("Index: " + idx, a[1] - 15, a[2] - 22, 10, 'arial');
+                a[0].display(a[1], a[2], 0);
+            }
+            idx++;
+        }
+        //transformed coordinates, coordinates in the background
+        ctx.restore();
+        //newNode
+        fillRect("white", 1120, 0, 300, 600);
+        drawLine(1120, 0, 1120, 600)
+        drawText("Split", 1180, 60, 40, 'arial');
+        drawLine(1160, 100, 1400, 100)
+
+        drawText("Merge", 1180, 160, 40, 'arial');
+        drawLine(1120, 0, 1120, 600)
+        drawLine(1160, 200, 1400, 200)
+
+        drawText("New Node", 1180, 260, 40, 'arial');
+        drawLine(1160, 300, 1400, 300)
+
+        drawText("Delete Tree", 1180, 360, 40, 'arial');
+        drawLine(1160, 400, 1400, 400)
+
+        drawText("Print Tree", 1180, 460, 40, 'arial');
+        drawLine(1160, 500, 1400, 500)
+        window.requestAnimationFrame(update);
+    }
+    update();
+    function drawLine(x, y, x1, y1) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+    }
+    function fillRect(color, sx, sy, w, h) {
+        ctx.fillStyle = color
+        ctx.fillRect(sx, sy, w, h)
+    }
+    function drawText(text, x, y, fontSize, fontF) {
+        ctx.fillStyle = "black";
+        ctx.font = fontSize + "px " + fontF;
+        ctx.fillText(text, x, y);
+    }
+
+    function fillCirc(color, x, y, r) {
+        ctx.beginPath()
+        ctx.arc(x, y, r, 0, 2 * pi)
+        ctx.fillStyle = color
+        ctx.fill()
+    }
+    function getRandRange(min, max) {
+        return Math.random() * (max + 1 - min) + min;
+    }
+    start = {};
+    var clicked = -1;
+    canvas.addEventListener("mousedown", function (evt) {
+        let mX = event.clientX - canvas.offsetLeft;
+        let mY = event.clientY - canvas.offsetTop;
+
+        rX = (mX - panX) / scale, rY = (mY - panY) / scale;
+        if (mX > 1120) {
+            if (mY < 100) {
+                idx = prompt("Tree Index to Split");
+                cnt = prompt("How many in left portion?")
+                save = split(trees[idx][0], cnt, 0);
+                trees.push([save[0], trees[idx][1], trees[idx][2]]);
+                trees.push([save[1], trees[idx][1] + 100, trees[idx][2]]);
+                trees[idx][0] = null;
+
+            } else if (mY < 200) {
+                idx1 = prompt("First Tree Index");
+                idx2 = prompt("Second Tree Index to merge into First Tree Index");
+                trees[idx1][0].copy(merge(trees[idx1][0], trees[idx2][0]));
+                trees[idx2][0] = null;
+            } else if (mY < 300) {
+                var a = prompt("Node Value?");
+                val = new node(a);
+                trees.push([val, getRandRange((200 - panX) / scale, (800 - panX) / scale), getRandRange((200 - panY) / scale, (400 - panY) / scale)]);
+            } else if (mY < 400) {
+                idx = prompt("Index of Tree to Delete");
+                trees[idx][0] = null;
+            } else if (mY < 500) {
+                let ans = "";
+                idx = prompt("Index of Tree to Print");
+                alert("[" + trees[idx][0].toString() + ']');
+            } else {
+
+            }
+            return;
+        }
+        for (let i = 0; i < trees.length; i++) {
+            let a = trees[i];
+            if (!a[0])
+                continue;
+            if ((rX - trees[i][1]) ** 2 + (rY - trees[i][2]) ** 2 <= 20 ** 2) {
+                clicked = i;
+                break;
+            }
+        }
+        document.getElementById("screen").innerHTML = ("Canvas Coordinates: " + mX + "/" + mY);
+        document.getElementById("screen1").innerHTML = ("Transformed Coordinates: " + rX + "/" + rY);
+
+        mouseD = true;
+        start = { x: rX, y: rY };
+    });
+
+    canvas.addEventListener("mousemove", function (evt) {
+        let mX = event.clientX - canvas.offsetLeft;
+        let mY = event.clientY - canvas.offsetTop;
+        rX = (mX - panX) / scale, rY = (mY - panY) / scale;
+        if (mouseD) {
+            if (clicked == -1) {
+                panX += (rX - start.x);
+                panY += (rY - start.y);
+            } else {
+                trees[clicked][1] += (rX - start.x);
+                trees[clicked][2] += (rY - start.y);
+                start = { x: rX, y: rY };
+            }
+        }
+    });
+    canvas.addEventListener("mouseout", function (evt) {
+        mouseD = false;
+        clicked = -1;
+    });
+
+    canvas.addEventListener("mouseup", function (evt) {
+        mouseD = false;
+        clicked = -1;
+    });
+</script>

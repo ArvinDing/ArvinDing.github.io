@@ -1,37 +1,19 @@
 <script src="https://www.desmos.com/api/v1.6/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+
 <head>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet" />
 </head>
+
 <body>
-    <nav class="navbar">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a href="index.html" class="nav-link">
-                    <i class="fas fa-project-diagram fa-3x"></i>
-                    <span class="link-text">Treap Visualizer</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="typing.html" class="nav-link">
-                    <i class="fas fa-dove fa-3x"></i>
-                    <span class="link-text">Typing Bird</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="desmos.html" class="nav-link">
-                    <i class="fas fa-chart-line fa-3x"></i>
-                    <span class="link-text">SVG to Desmos </span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-    <main style="padding-left:10rem">
+    <div id="nav-placeholder"></div>
+    <main style="padding-left:2rem">
         <h1>SVG to Desmos</h1>
-        <p>Choose a SVG File at the bottom. 
-            After selecting file, it may take a while to load. Zoom out to see full picture. 
-            Try to limit svg files to 30kb. To convert PNG to SVG, there are many resources online such as <a href="https://image.online-convert.com/convert/png-to-svg"> this</a>.
-            </p>
+        <p>Choose a SVG File at the bottom.
+            After selecting file, it may take a while to load. Zoom out to see full picture.
+            Try to limit svg files to 30kb. To convert PNG to SVG, there are many resources online such as <a
+                href="https://image.online-convert.com/convert/png-to-svg"> this</a>.
+        </p>
         <div id="calculator" style="width: 1500px; height: 800px;"></div>
         <input type="file" id="file-selector" multiple>
     </main>
@@ -39,6 +21,9 @@
 
 
 <script>
+    $(function () {
+        $("#nav-placeholder").load("nav.html");
+    });
     var elt = document.getElementById('calculator');
     var calculator = Desmos.GraphingCalculator(elt);
     //calculator.setExpression({ latex: '((1-t)^3t \\cdot 5,t)', parametricDomain: { min: "0", max: "1" } });
@@ -166,7 +151,7 @@
         };
     });
 
-  // var parser = new DOMParser();
-  // var doc = parser.parseFromString(stringContainingXMLSource, "image/svg+xml");
+    // var parser = new DOMParser();
+    // var doc = parser.parseFromString(stringContainingXMLSource, "image/svg+xml");
 
 </script>
