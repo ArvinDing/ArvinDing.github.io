@@ -71,3 +71,26 @@ main {
 .nav-item:hover::after {
     width: 100%; /* Make the line fully visible on hover */
 }
+
+.post-link{
+    display : block;
+    font-size: 24px;    
+}
+
+ /* Style for the expandable section */
+ .proof-section {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+/* Style for the proof label */
+.proof-label {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+
+.proof-section {
+    background-color: #add8e6; /* Baby blue color */
+    padding: 10px;
+}

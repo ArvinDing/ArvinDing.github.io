@@ -1,0 +1,182 @@
+<head>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script type="text/javascript" async
+       src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+ </head>
+ <style>
+    .content {
+    width: 800px;
+    margin: 0 auto;
+    /* Horizontal centering */
+    }
+ </style>
+ <body>
+    <div id="nav-placeholder"></div>
+    <div class="content">
+       <h1>Best Time to Buy and Sell Stock IV</h1>
+       On a whim, I decided to solve this <a
+          href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/description/">leetcode
+       question</a>.
+       <p>There is a really nice solution that solves this problem in \(O(N)\) worst case. I didn't think of it, I did
+          an \(O(Nk)\) solution. It took me a while to get so I wanted to record my thoughts. 
+       </p>
+       <h2>The Question </h2>
+       Given an array prices of length \(N\) representing the prices of the stock on different days. Find the maximum
+       profit by buying and selling stocks on different days. You may complete at most \(k\) transactions(k buys and k
+       sells). Your position of the stock may not exceed 1(i.e. you must sell the stock before you buy again) or go
+       below 0.
+       <h2>Solution</h2>
+       <strong>Lemma 1</strong>
+       Consider \(prices[i]\) such that \(prices[i-1] < prices[i]\), in any optimal solution we do not buy on day \(i\)
+       (we do nothing or sell). Symmetrically, if \(price[i] < price[i+1]\) then in any optimal solution we do not
+       sell on day \(i\). 
+       <p class="proof-label" onclick="toggleProof(1)">Proof</p>
+       <div id="proofContent1" class="proof-section" style="display: none;">
+          <p>Assume there exists an optimal solution where we bought on day \(i\) and \(prices[i-1] < prices[i]\).
+             Then we must of either have done nothing on day \(i-1\) or sold. Imagine we did nothing on day
+             \(i\) and instead on day \(i-1\) we bought or did nothing respectively. This is more optimal.
+          </p>
+       </div>
+       <strong>Lemma 2</strong>
+       If \(prices[i] > prices[i+1]\), then in any optimal solution we do not buy on day \(i\).
+       Symmetrically if \(prices[i-1] > prices[i]\), then in any optimal solution we do not sell on day \(i\).
+       <p class="proof-label" onclick="toggleProof(2)">Proof</p>
+       <div id="proofContent2" class="proof-section" style="display: none;">
+          <p>Assume there exists an optimal solution where we bought on day \(i\) and \(prices[i] > prices[i+1]\).
+             Then we must of either have done nothing on day \(i+1\) or
+             sold. Imagine we did nothing on day \(i\) and instead on day \(i+1\) we bought or did nothing. This
+             is more optimal.
+          </p>
+       </div>
+       <strong>Key Observation Number 1(Buy Low, Sell High)</strong>
+       In any optimal solution, we buy only on days \(i\) when \(prices[i-1]>= prices[i] <= prices[i+1]\) (taking
+       \(prices[0]\) to be \(\infty\) and \(price[prices.length]\) to be \(\infty\)). <br>
+       Symmetrically, in any optimal solution, we sell only on days \(i\) when \(prices[i-1]<=prices[i]>= prices[i+1]\) (taking
+       \(prices[0]\) to be \(-\infty\) and \(price[prices.length]\) to be \(-\infty\)).
+       <p class="proof-label" onclick="toggleProof(3)">Proof</p>
+       <div id="proofContent3" class="proof-section" style="display: none;">
+          Follows from lemma 1 + lemma 2.
+       </div>
+       <strong>Lemma 3</strong>
+       There exists an optimal solution where if \(prices[i]=prices[i+1]\) we do nothing on day \(i\).
+       Informally, we can ignore consecutive duplicate days.
+       <p class="proof-label" onclick="toggleProof(4)">Proof</p>
+       <div id="proofContent4" class="proof-section" style="display: none;">
+          Take an optimal solution with the least number of transactions. For days with equal price we
+          will either buy or sell once. Delay the buy or sell until latest possible date.
+       </div>
+       <strong>Refactoring the Input</strong>
+       First ignore the consecutive days with duplicate prices.
+       Construct a list of days we can buy and sell on based on key observation 1(these lists are disjoint).
+       We can't sell before we buy or have a buy the stock at the end without selling so we can ignore
+       these days.
+       The days we can buy and sell on alternate, follows from the 3rd observation. Now pair up
+       potential buy days with the potenial sell day following directly after them.
+       <br>
+       Denote the set of pairs of buy and sell prices \(\{(b_1,s_1), (b_2,s_2), \dots, (b_m,s_m)\}\). Our question is find m(m<=k) pairs
+       of the form \(\{(b_{i_1},s_{j_1}),(b_{i_2},s_{j_2}), \dots, (b_{i_m},s_{j_m})\}\) where \( i_x <= j_x \) and \(j_x < i_{x+1}\) for all valid x.
+       <br>
+       <strong>Key Observation Number 2</strong>
+       Let's say \(b_i >= b_{i+1} \) and before \(b_i\) are intervals that completely cover it then in
+       the optimal solution we either
+       <ul>
+          <li>buy at b_i and sell at \(s_i\). Furthermore, removing \((b_i,s_i)\) from our solution we will get an optimal
+             solution with k-1 transactions for the remaining input.
+          </li>
+          <li>do not buy at b_i and do not sell at \(s_i\) </li>
+       </ul>
+       <p class="proof-label" onclick="toggleProof(5)">Proof</p>
+         <div id="proofContent5" class="proof-section" style="display: none;">
+            Because all intervals before completely contain it we will never buy it at \(j < i \) for \(b_j\) and sell it at \(s_i\). We could of just sold it at 
+            \(s_j\) for at least as optimal.
+            
+            Therefore if we do decide to sell at \(s_i\) we must have also bought at \(b_i\). 
+           </div>
+       <strong>Key Observation Number 3</strong>
+       Let's say \( b_{i} < b_{i+1} \text{ and } s_i <=s_{i+1}\) and before \((b_i,s_i)\) are intervals
+       that completely covers it. 
+       The optimal solution to input \(\{(b_1,s_1), (b_2,s_2), \dots,(b_i,s_{i}), (b_{i+1},s_{i+1}) , \dots, (b_m,s_m)\}\)
+       is equal to the optimal solution to input \(\{(b_1,s_1), (b_2,s_2), \dots, (b_{i+1},s_{i}), (b_i,s_{i+1}), \dots, (b_m,s_m)\}\)
+       <p class="proof-label" onclick="toggleProof(6)">Proof</p>
+       <div id="proofContent6" class="proof-section" style="display: none;">
+            Consider an optimal solution to \(\{(b_1,s_1), (b_2,s_2), \dots,(b_i,s_{i}), (b_{i+1},s_{i+1}) , \dots, (b_m,s_m)\}\).
+            We will either have 0 position of the stock entering (b_i,s_{i}) or +1 position of the stock. 
+            If we enter \((b_i,s_i)\) with a +1 position then we will never sell at \(s_i\) as we could of sold earlier for at least as good a price, but acting
+            optimally we can either
+            <ul>
+                <li>sell at \(s_{i+1}\)</li>
+                <li>do nothing on days with price b_i, \(s_i\), b_{i+1}, \(s_{i+1}\)</li>
+            </ul>
+            If we enter \((b_i,s_i)\) with a 0 position then acting optimally we will either 
+            <ul>
+                <li>buy at b_i, sell at s_{i}, buy at b_{i+1} </li>
+                <li>buy at b_i, sell at \(s_i\), buy at b_{i+1}, and sell at \(s_{i+1}\) </li>
+                <li>buy at b_i, sell at \(s_{i+1}\) </li>
+                <li>buy at b_i </li>
+                <li>do nothing on days with price b_i, \(s_i\), b_{i+1}, \(s_{i+1}\)</li>
+            </ul>
+            while doing nothing on days not specified. Can show all other actions can be changed into one of these actions.
+            <br><br>
+            Now consider if the input was instead 
+            \(\{(b_1,s_1), (b_2,s_2), \dots, (b_{i+1},s_{i}), (b_i,s_{i+1}), \dots, (b_m,s_m)\}\)
+            If we enter \((b_i,s_i)\) with a +1 position then we will never sell at \(s_i\) as we could of sold earlier for as good a price.
+            Acting optimally we can either
+            <ul>
+                <li>sell at \(s_{i+1}\)</li>
+                <li>do nothing on days with price b_i, \(s_i\), b_{i+1}, \(s_{i+1}\)</li>
+            </ul>
+            If we enter \((b_i,s_i)\) with a 0 position. Acting optimally we can either
+            <ul>
+                <li>buy at \(b_{i+1}\), sell at \(s_{i}\), buy at \(b_{i}\) </li>
+                <li>buy at \(b_i\), sell at \(s_i\), buy at \(b_{i+1}\), and sell at \(s_{i+1}\) </li>
+                <li>buy at \(b_i\), sell at \(s_{i+1}\) </li>
+                <li>buy at \(b_i\) </li>
+                <li>do nothing on days with price b_i, \(s_i\), b_{i+1}, \(s_{i+1}\)</li>
+            </ul>
+            while doing nothing on days not specified. Can show all other actions can be changed into one of these actions.
+            Because our optimal set of actions result in the same outcome solving either problem results in the same solution.
+        </div>
+       <strong>Solving the problem</strong>
+       Key Observation 2+3 suggest a interesting approach. 
+
+       We can iterate through \( (b_i, s_i) \).
+       
+       <br>
+       If it has buy price is less than or equal to the previous buy price (\(b_i \leq  b_{i-1}\)), then by observation two we can remove it
+       and solve the problem on the remaining buy sell pairs. We can determine the optimal solution with \(k\) transactions and \(k-1\) transactions and if that difference is less
+       than \(s_i-b_i\) then we should include it along with the other optimal buy sell pairs for \(k-1\) transactions.
+       <br>
+       If it has a buy price greater than the last one and sell price greater than or equal to the last one
+        ( \(b_{i-1} < b_i\) \text{ and } s_{i-1}\leq \(s_i\)) then we can change our problem by observation three. 
+        In other words, change \(\{\dots, (b_{i-1},s_{i-1}), (b_i,s_i), \dots\}\) to \(\{\dots, (b_{i},s_{i-1}), (b_{i-1},s_i), \dots\}\) and then apply observation 2 to reduce the question again.
+
+        <br>
+        In this manner when iterating on \( (b_i, s_i) \), we maintain that we are always solving a problem where all the intervals before
+        completely contain the next. When we are finished we are left with intervals each one which contains the next. To find the best solution in this particular case,
+         with at most \(k\) transactions it suffices to just take the first \(k\) buys and first \(k\) sells (or as many as possible if less than \(k\) pairs left).
+         
+        Also add back the bonus generated by the intervals removed by the repeated use of observation 2. You can find <a href= "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/solutions/54118/c-solution-with-o-n-klgn-time-using-max-heap-and-stack/">code implementation here</a>.
+        (Instead of using a max heap use a \(O(n)\) k-selection algorithm like median of medians).
+        <br><br>
+        <strong>Final Thoughts</strong>
+        The also allows you to find maximum total sum of k disjoint subarrays in an array \(a\) in \(O(n)\) where \(n\) is the length of the array. 
+        Just take the prefix array and apply this problem to it(buying is the start of a subarray and selling is the end of a subarray).
+        In the case \(k=1\) this is the well known maximum sum subarray problem.
+        <br>
+        Define function \(ans(x)\) as the answer to this problem with at most \(x\) transactions (\(k=x\)). This reasoning and implementation proves \(ans(x)\) a concave function. 
+        You could use <a href="https://usaco.guide/adv/lagrange?lang=cpp">alien's trick</a>.
+    </body>
+ <script>
+    $(function () {
+        $("#nav-placeholder").load("nav.html");
+    });
+    function toggleProof(proofNum) {
+        var proofContent = document.getElementById("proofContent" + proofNum);
+        if (proofContent.style.display === "none") {
+            proofContent.style.display = "block";
+        } else {
+            proofContent.style.display = "none";
+        }
+    }
+ </script>
